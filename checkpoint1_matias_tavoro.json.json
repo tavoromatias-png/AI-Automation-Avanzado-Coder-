@@ -1,0 +1,209 @@
+{
+  "name": "IA avanzado 1",
+  "nodes": [
+    {
+      "parameters": {
+        "contextWindowLength": 3
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        -16,
+        160
+      ],
+      "id": "0b51847e-abea-40e0-880e-c122cb6ef324",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -416,
+        -32
+      ],
+      "id": "63175e4a-2a45-4f96-a58a-52f206725083",
+      "name": "When chat message received",
+      "webhookId": "26ee6889-2347-4bb6-805d-c58532af4b50"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -192,
+        160
+      ],
+      "id": "554721b7-336b-4e67-8753-89946cca4a2f",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "0pgxLDMd7j9JucBG",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "tavoromatias@gmail.com",
+        "subject": "Auditoría Agente Jurídico",
+        "message": "=\n{{\n(() => {\n  const consulta = $('When chat message received').first().json.chatInput || 'No disponible';\n const agente = $('AI Agent + Tool').first().json;\n\nconst respuesta = agente.output || 'Sin respuesta';\n\nconst pasos = agente.intermediateSteps || [];\n\n  const escapar = (valor) => String(valor)\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;');\n\n  const formatear = (texto) => escapar(texto)\n    .replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>')\n    .replace(/\\n/g, '<br>');\n\n  const herramientas = pasos\n    .map(p => p.action?.tool || p.tool)\n    .filter(Boolean);\n\n  const herramientasUnicas = [...new Set(herramientas)];\n\n  const auditoria = herramientasUnicas.length\n    ? herramientasUnicas.map(escapar).join(', ')\n    : 'Sin herramientas registradas en los pasos intermedios';\n\n  return `\n  <div style=\"font-family:Arial,sans-serif;max-width:680px;margin:auto;color:#243044;line-height:1.6;\">\n\n    <div style=\"background:#17365D;color:white;padding:22px;border-radius:8px 8px 0 0;\">\n      <h2 style=\"margin:0;color:white;\">Auditoría del Agente Jurídico</h2>\n      <p style=\"margin:6px 0 0;color:#E1EAF5;\">Reporte automático de actividad</p>\n    </div>\n\n    <div style=\"padding:24px;border:1px solid #E1E5EB;\">\n\n      <p style=\"font-size:13px;color:#667085;\">\n        Fecha: ${$now.toFormat('dd/MM/yyyy HH:mm')}\n      </p>\n\n      <h3 style=\"color:#17365D;\">Consulta recibida</h3>\n      <div style=\"background:#F2F5FA;padding:14px;border-radius:6px;\">\n        ${formatear(consulta)}\n      </div>\n\n      <h3 style=\"color:#17365D;margin-top:26px;\">Herramientas utilizadas</h3>\n      <p>${auditoria}</p>\n\n      <h3 style=\"color:#17365D;margin-top:26px;\">Respuesta del agente</h3>\n      <div style=\"padding:14px;border-left:3px solid #3273B9;background:#FAFBFD;\">\n        ${formatear(respuesta)}\n      </div>\n\n    </div>\n\n    <div style=\"font-size:12px;color:#667085;text-align:center;padding:15px;\">\n      Reporte generado automáticamente mediante n8n\n    </div>\n\n  </div>`;\n})()\n}}\n",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        352,
+        -32
+      ],
+      "id": "e85f20dc-e5c9-4f1f-9969-4f9e08351db6",
+      "name": "Send a message",
+      "webhookId": "44749df1-c4d0-4b61-9034-00231f8ed3e5",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "cV6gYYL6tez4yAz1",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "=Herramienta de consulta de una base de conocimiento jurídica almacenada en Google Sheets.\n\nContiene expedientes ficticios con identificador único, carátula, materia, estado procesal, tarea pendiente, responsable, prioridad, estado de la tarea, fecha de vencimiento, última actuación y observaciones.\n\nUTILIZAR ESTA HERRAMIENTA CUANDO:\n\nEl usuario solicite información sobre uno o varios expedientes.\n\nPregunte por tareas pendientes, en curso o completadas.\n\nNecesite conocer vencimientos registrados.\n\nSolicite identificar expedientes según su materia o estado.\n\nPregunte por tareas asignadas a un responsable.\n\nSolicite un resumen de la actividad registrada.\n\nEl agente debe consultar los registros y analizar únicamente los datos recuperados.\n\nNO UTILIZAR ESTA HERRAMIENTA para responder preguntas jurídicas generales que no dependan de los expedientes.",
+        "documentId": {
+          "__rl": true,
+          "value": "1pJNVo3roYyT-lNSuM0P1tCnRZXqFUBuPUE9dloOlwVs",
+          "mode": "list",
+          "cachedResultName": "Base_de_conocimiento_Coderhouse",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJNVo3roYyT-lNSuM0P1tCnRZXqFUBuPUE9dloOlwVs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1930996261,
+          "mode": "list",
+          "cachedResultName": "Base_de_conocimiento",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJNVo3roYyT-lNSuM0P1tCnRZXqFUBuPUE9dloOlwVs/edit#gid=1930996261"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        192,
+        176
+      ],
+      "id": "46675ca5-0870-4679-af5a-bc765a980a6e",
+      "name": "Base_de_conocimiento",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "0P4ugQ9X8LqSquNW",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=ROL\n\nSos un asistente virtual especializado en gestión y seguimiento de expedientes jurídicos. Tu función es asistir a un equipo de abogados en la consulta de información administrativa y procesal registrada en una base de conocimiento.\n\nÁMBITO DE ACTUACIÓN\n\nTrabajás exclusivamente con información de expedientes, tareas, vencimientos, responsables y estados procesales registrados en una base de Google Sheets.\n\nDisponés de una herramienta llamada \"Base_de_conocimiento\" que permite consultar los registros de esa planilla.\n\nOBJETIVO\n\nInterpretar las consultas formuladas por el usuario en lenguaje natural, identificar qué información necesita y utilizar autónomamente la herramienta disponible cuando corresponda.\n\nDebés proporcionar respuestas claras, precisas, ordenadas y basadas en los datos efectivamente recuperados.\n\nREGLAS DE FUNCIONAMIENTO\n\nCuando el usuario solicite información sobre expedientes, tareas, vencimientos, responsables o estados procesales, utilizá la herramienta Base_de_conocimiento.\n\nNo respondas consultas relativas a expedientes basándote únicamente en tu memoria conversacional. Consultá la planilla para recuperar información actualizada.\n\nSi el usuario pregunta por un expediente concreto, buscá su identificador y verificá los datos antes de responder.\n\nSi solicita un listado general, analizá los registros recuperados y aplicá los filtros necesarios.\n\nPara consultas sobre vencimientos, utilizá exclusivamente las fechas registradas. No calcules plazos procesales que no estén expresamente informados.\n\nNo inventes expedientes, actuaciones judiciales, resoluciones, responsables, fechas ni estados.\n\nSi no encontrás información suficiente, indicá expresamente que no hay registros que permitan responder la consulta.\n\nSi la herramienta devuelve un error, informá que no pudiste acceder a la base de conocimiento.\n\nNo utilices herramientas cuando el usuario formule preguntas generales que puedan responderse sin consultar información de expedientes.\n\nDiferenciá siempre entre información registrada y posibles interpretaciones.\n\nLÍMITES DE ACTUACIÓN\n\nNo podés modificar, agregar ni eliminar registros de la planilla.\n\nNo podés presentar escritos judiciales.\n\nNo podés enviar notificaciones procesales.\n\nNo podés efectuar pagos ni asumir compromisos en representación de una persona.\n\nNo podés inventar ni completar datos faltantes.\n\nNo debés emitir conclusiones jurídicas definitivas basadas únicamente en los registros administrativos.\n\nESCALAMIENTO Y SUPERVISIÓN HUMANA\n\nCuando una solicitud implique modificar información, realizar actuaciones judiciales, adoptar decisiones jurídicas o ejecutar acciones fuera de tu alcance, informá al usuario que requiere intervención humana.\n\nAnte información incompleta, contradictoria o ambigua, identificá la dificultad y solicitá una aclaración cuando sea necesaria.\n\nFORMATO DE RESPUESTA\n\nRespondé siempre en español.\n\nUtilizá un lenguaje profesional, claro y conciso.\n\nCuando existan varios resultados, presentalos mediante listas o tablas.\n\nPara cada expediente relevante, identificá preferentemente:\n\nNúmero o identificador de expediente.\n\nCarátula.\n\nMateria.\n\nEstado.\n\nTarea pendiente.\n\nFecha de vencimiento, cuando exista.\n\nNunca afirmes haber consultado la base de conocimiento si la herramienta no fue ejecutada satisfactoriamente.",
+          "maxIterations": 7,
+          "returnIntermediateSteps": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -112,
+        -32
+      ],
+      "id": "69557d60-7f1e-4a74-9426-82b9b052c8e1",
+      "name": "AI Agent + Tool"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent + Tool",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent + Tool",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent + Tool",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Base_de_conocimiento": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent + Tool",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent + Tool": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "a00c0e2b-0bab-4812-9568-ba591e7ce75a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "83d0f64b2c1c0d11c05472bd487727c5a31a37e2b5fe229254a7be8e8a228c5e"
+  },
+  "nodeGroups": [],
+  "id": "FcecKplfIPUfhQkK",
+  "tags": []
+}

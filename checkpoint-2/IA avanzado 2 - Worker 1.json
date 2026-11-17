@@ -1,0 +1,231 @@
+{
+  "name": "IA avanzado 2 - Worker 1",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "\n{\n  \"intencion\": \"CONSULTAR\",\n  \"consulta\": \"¿Qué expedientes de Derecho Laboral tienen tareas pendientes?\",\n  \"expediente_id\": \"\"\n}\n"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -224,
+        -16
+      ],
+      "id": "f3a863d0-40cd-4891-868c-c0122d4daa1c",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.consulta }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=ROL\n\nSos el Worker 1 - Consulta de Expedientes, un agente especializado en recuperar y analizar información administrativa y procesal de una base jurídica.\n\nFormás parte de una arquitectura Manager-Worker desarrollada en n8n.\n\nÁMBITO\n\nRecibís consultas delegadas por el Manager y disponés de una herramienta llamada Base_de_conocimiento, conectada a Google Sheets.\n\nTu función es exclusivamente consultar información. No tenés facultades para modificar registros.\n\nOBJETIVO\n\nInterpretar la consulta recibida, utilizar Google Sheets para recuperar los expedientes relevantes y devolver una respuesta precisa y fundamentada en los registros existentes.\n\nREGLAS\n\nConsultá Base_de_conocimiento cuando recibas una solicitud sobre expedientes, tareas, responsables, prioridades o vencimientos.\n\nUtilizá únicamente los datos recuperados de Google Sheets.\n\nNo inventes información ni completes datos faltantes.\n\nSi el usuario consulta un expediente específico, identificá el registro correspondiente.\n\nSi solicita un listado general, aplicá los criterios indicados y seleccioná los expedientes relevantes.\n\nNo calcules plazos procesales ni supongas fechas de vencimiento.\n\nSi no encontrás información, indicá que no existen registros coincidentes en la base consultada.\n\nSi la herramienta falla, informá que la consulta no pudo completarse.\n\nLÍMITES\n\nNo podés agregar, modificar ni eliminar expedientes.\n\nNo podés ejecutar actuaciones judiciales.\n\nNo podés adoptar decisiones jurídicas en representación del usuario.\n\nESCALAMIENTO\n\nCuando una consulta requiera modificar registros, indicá que esa operación excede tus facultades y debe ser gestionada por el Manager.\n\nSi los datos resultan contradictorios o insuficientes, informá la situación sin inventar una respuesta.\n\nFORMATO DE RESPUESTA\n\nDevolvé la información utilizando exclusivamente la estructura definida en el Structured Output Parser.\n\nRespetá los siguientes criterios:\n\nEl campo \"worker\" debe identificarte como \"consulta_expedientes\".\n\nEl campo \"estado\" debe contener \"exito\", \"sin_resultados\" o \"error\", según corresponda.\n\nEl campo \"consulta\" debe reflejar la solicitud recibida del Manager.\n\nEl campo \"resultado\" debe contener la respuesta elaborada a partir de los datos efectivamente obtenidos de Google Sheets.\n\nEl campo \"cantidad\" debe indicar el número real de expedientes que coinciden con los criterios solicitados.\n\nSi no encontrás coincidencias, utilizá \"sin_resultados\" y cantidad 0.\n\nSi falla la consulta de Google Sheets, utilizá \"error\" y no inventes resultados.\n\nNo agregues explicaciones ni texto fuera de la estructura requerida.",
+          "maxIterations": 7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -16,
+        -16
+      ],
+      "id": "fc117283-51ea-450b-b460-8ea2f67e9628",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -160,
+        192
+      ],
+      "id": "efd0f450-95f4-4dbb-86c1-6e8c3a99f34a",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "0pgxLDMd7j9JucBG",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Herramienta de consulta de una base de conocimiento jurídica almacenada en Google Sheets.\n\nContiene expedientes ficticios con identificador único, carátula, materia, estado procesal, tarea pendiente, responsable, prioridad, estado de la tarea, fecha de vencimiento, última actuación y observaciones.\n\nUTILIZAR ESTA HERRAMIENTA CUANDO:\n\nEl usuario solicite información sobre uno o varios expedientes.\n\nPregunte por tareas pendientes, en curso o completadas.\n\nNecesite conocer vencimientos registrados.\n\nSolicite identificar expedientes según su materia o estado.\n\nPregunte por tareas asignadas a un responsable.\n\nSolicite un resumen de la actividad registrada.\n\nEl agente debe consultar los registros y analizar únicamente los datos recuperados.\n\nNO UTILIZAR ESTA HERRAMIENTA para responder preguntas jurídicas generales que no dependan de los expedientes.",
+        "documentId": {
+          "__rl": true,
+          "value": "1pJNVo3roYyT-lNSuM0P1tCnRZXqFUBuPUE9dloOlwVs",
+          "mode": "list",
+          "cachedResultName": "Base_de_conocimiento_Coderhouse",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJNVo3roYyT-lNSuM0P1tCnRZXqFUBuPUE9dloOlwVs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1930996261,
+          "mode": "list",
+          "cachedResultName": "Base_de_conocimiento",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJNVo3roYyT-lNSuM0P1tCnRZXqFUBuPUE9dloOlwVs/edit#gid=1930996261"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        80,
+        208
+      ],
+      "id": "0cbe1ae3-277a-4182-b8c9-0269503bec57",
+      "name": "Base_de_conocimiento",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "0P4ugQ9X8LqSquNW",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"worker\": \"consulta_expedientes\",\n  \"estado\": \"exito\",\n  \"consulta\": \"¿Qué expedientes laborales tienen tareas pendientes?\",\n  \"resultado\": \"Se encontraron tres expedientes laborales con tareas pendientes o en curso.\",\n  \"cantidad\": 3\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        272,
+        208
+      ],
+      "id": "61c4042d-c263-41d1-acc8-d0655751e272",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d2828290-6a5b-406b-9572-0bd5843aeb7a",
+              "name": "worker",
+              "value": "={{ $json.output.worker }}",
+              "type": "string"
+            },
+            {
+              "id": "93ba20ae-2069-4dfa-895c-ef8f88720b30",
+              "name": "estado",
+              "value": "={{ $json.output.estado }}",
+              "type": "string"
+            },
+            {
+              "id": "4560d006-a01c-466e-ba73-a0f579b6e68f",
+              "name": "consulta",
+              "value": "={{ $json.output.consulta }}",
+              "type": "string"
+            },
+            {
+              "id": "de1dc2fa-1a84-4ed4-98d5-dcd156f9e68c",
+              "name": "resultado",
+              "value": "={{ $json.output.resultado }}",
+              "type": "string"
+            },
+            {
+              "id": "10e494d7-163d-47f4-9eb3-dd3a2676fcaa",
+              "name": "cantidad",
+              "value": "={{ $json.output.cantidad }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        384,
+        -16
+      ],
+      "id": "74ffba83-26d6-4f8f-ba97-f0bffc5d06df",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Base_de_conocimiento": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "7e77beac-e50c-4d65-89c0-0b98b81bc4be",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "83d0f64b2c1c0d11c05472bd487727c5a31a37e2b5fe229254a7be8e8a228c5e"
+  },
+  "nodeGroups": [],
+  "id": "EJYRWqO0gKXVxzwl",
+  "tags": []
+}

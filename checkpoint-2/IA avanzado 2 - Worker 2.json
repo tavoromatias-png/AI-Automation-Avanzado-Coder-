@@ -1,0 +1,664 @@
+{
+  "name": "IA avanzado 2 - Worker 2",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ JSON.stringify($json) }}\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=ROL\n\nSos el Worker 2 - Registro de Expedientes, un agente especializado en validar solicitudes de alta de expedientes jurídicos.\n\nFormás parte de una arquitectura multi-agente Manager-Worker desarrollada en n8n.\n\nÁMBITO DE ACTUACIÓN\n\nRecibís exclusivamente datos estructurados de nuevos expedientes enviados por el Workflow Manager.\n\nTu función es verificar que la información recibida sea suficiente, coherente y adecuada para incorporarla a una base de conocimiento jurídica almacenada en Google Sheets.\n\nOBJETIVO\n\nValidar los datos recibidos y preparar una respuesta estructurada que indique si el expediente está en condiciones de ser registrado.\n\nREGLAS DE FUNCIONAMIENTO\n\nAnalizá exclusivamente los datos JSON recibidos desde el Manager.\n\nVerificá que exista una carátula o identificación suficiente del expediente.\n\nComprobá que se informe la materia jurídica correspondiente.\n\nIdentificá los campos incompletos o inconsistentes.\n\nNunca inventes fechas, responsables, actuaciones judiciales ni información procesal.\n\nConservá los datos proporcionados por el usuario sin alterar su significado.\n\nLas prioridades válidas son: Alta, Media y Baja.\n\nLos estados de tarea válidos son: Pendiente, En curso y Completada.\n\nLas fechas deben utilizar el formato YYYY-MM-DD.\n\nNo afirmes que un expediente fue registrado si Google Sheets no confirmó efectivamente la operación.\n\nLos campos Ultima_actuacion y Observaciones son opcionales. Su ausencia no debe provocar el rechazo de una solicitud de registro. Cuando no estén informados, deben conservarse como cadenas vacías, sin inventar información.\n\nLos campos obligatorios son: Expediente, Materia, Estado_procesal, Tarea_pendiente, Responsable, Prioridad, Estado_tarea y Fecha_vencimiento.\n\nLÍMITES Y GUARDRAILS\n\nNo podés eliminar expedientes existentes.\n\nNo podés modificar registros anteriores.\n\nNo debés inventar identificadores ni considerar que un expediente es único sin verificarlo.\n\nNo debés calcular plazos procesales.\n\nNo debés ejecutar acciones judiciales.\n\nESCALAMIENTO\n\nCuando falten datos esenciales, indicá que el registro no puede completarse e identificá los campos pendientes.\n\nCuando detectes información contradictoria, solicitá aclaración.\n\nSi una herramienta falla, informá el error sin afirmar que la operación fue exitosa.\n\nFORMATO DE RESPUESTA\n\nRespondé exclusivamente mediante un objeto JSON válido, sin texto adicional.\n\nUtilizá la siguiente estructura:\n\n{\n\"worker\": \"registro_expedientes\",\n\"validacion\": \"aprobada\",\n\"motivo\": \"\",\n\"datos\": {}\n}\n\nSi la validación falla, utilizá \"rechazada\" en el campo \"validacion\" y explicá el motivo.\n\nEl estado \"aprobada\" significa únicamente que los datos superaron la validación inicial. No significa que el expediente haya sido registrado en Google Sheets.\n\n# VERIFICACIÓN DE EXPEDIENTES EXISTENTES\n\nAntes de aprobar la validación de un nuevo expediente, utilizá la herramienta Consultar_expedientes_existentes.\n\nCompará la carátula recibida con los expedientes existentes.\n\nSi identificás un expediente claramente duplicado, devolvé:\n\n- validacion: \"rechazada\"\n- motivo: \"El expediente ya se encuentra registrado en la base de conocimiento.\"\n\nSi existe una posible coincidencia que no permite determinar con certeza si se trata del mismo expediente, devolvé:\n\n- validacion: \"rechazada\"\n- motivo: \"Posible expediente duplicado. Requiere revisión humana.\"\n\nSi no encontrás coincidencias y los datos recibidos son suficientes, podés devolver validacion: \"aprobada\".\n\nLa aprobación es exclusivamente preliminar. No significa que se haya ejecutado el alta.\n\nSi la herramienta no puede consultar la base, rechazá la validación e informá que no fue posible verificar los registros existentes.",
+          "maxIterations": 5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -240,
+        352
+      ],
+      "id": "834f112e-a63c-4747-bf60-4be1676171dd",
+      "name": "Worker 2 - Registro"
+    },
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "\n{\n  \"Expediente\": \"González c/ Empresa del Sur S.A. s/ despido\",\n  \"Materia\": \"Laboral\",\n  \"Estado_procesal\": \"Contestación de demanda\",\n  \"Tarea_pendiente\": \"Preparar contestación de demanda\",\n  \"Responsable\": \"Dr. Martín López\",\n  \"Prioridad\": \"Alta\",\n  \"Estado_tarea\": \"Pendiente\",\n  \"Fecha_vencimiento\": \"2026-11-30\",\n  \"Ultima_actuacion\": \"\",\n  \"Observaciones\": \"Expediente ficticio de prueba\"\n}\n"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -592,
+        352
+      ],
+      "id": "41497997-2b49-462b-b79e-aafa4a243e93",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -304,
+        544
+      ],
+      "id": "d8a1db06-f746-4daf-a1d6-67c576ddbaa6",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "0pgxLDMd7j9JucBG",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"worker\": \"registro_expedientes\",\n  \"validacion\": \"aprobada\",\n  \"motivo\": \"\",\n  \"datos\": {\n    \"Expediente\": \"González c/ Empresa del Sur S.A. s/ despido\",\n    \"Materia\": \"Laboral\",\n    \"Estado_procesal\": \"Contestación de demanda\",\n    \"Tarea_pendiente\": \"Preparar contestación de demanda\",\n    \"Responsable\": \"Dr. Martín López\",\n    \"Prioridad\": \"Alta\",\n    \"Estado_tarea\": \"Pendiente\",\n    \"Fecha_vencimiento\": \"2026-11-30\",\n    \"Ultima_actuacion\": \"\",\n    \"Observaciones\": \"Expediente ficticio\"\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -16,
+        544
+      ],
+      "id": "4cb8b774-dfc1-4f57-8c16-b25769cec07e",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b24899cc-9d78-44ef-97c8-6493d4e5901a",
+              "leftValue": "={{ $json.output.validacion }}",
+              "rightValue": "aprobada",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        112,
+        352
+      ],
+      "id": "6347ed3b-815b-40ee-af5d-c56d151df516",
+      "name": "Validacion de registro"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c7cc0083-f323-4ab9-ad1e-2b22637c9c77",
+              "name": "worker",
+              "value": "={{ $json.output.worker }}",
+              "type": "string"
+            },
+            {
+              "id": "7862c8a3-72ef-4b54-bb9b-c31b7318128c",
+              "name": "estado",
+              "value": "rechazado",
+              "type": "string"
+            },
+            {
+              "id": "8748631b-6194-45f9-a0fb-dbc48b827e3c",
+              "name": "motivo",
+              "value": "={{ $json.output.motivo }}",
+              "type": "string"
+            },
+            {
+              "id": "ab85381e-9f4e-4265-ac89-fcc75dac3493",
+              "name": "registrado",
+              "value": false,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        320,
+        544
+      ],
+      "id": "dcf57534-6c6a-4fb3-8558-73d20679529b",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1pJNVo3roYyT-lNSuM0P1tCnRZXqFUBuPUE9dloOlwVs",
+          "mode": "list",
+          "cachedResultName": "Base_de_conocimiento_Coderhouse",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJNVo3roYyT-lNSuM0P1tCnRZXqFUBuPUE9dloOlwVs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1930996261,
+          "mode": "list",
+          "cachedResultName": "Base_de_conocimiento",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJNVo3roYyT-lNSuM0P1tCnRZXqFUBuPUE9dloOlwVs/edit#gid=1930996261"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        320,
+        336
+      ],
+      "id": "9f4c3131-f02f-4ae9-a6bc-0ede2ad2edef",
+      "name": "Verificar expedientes existentes",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "0P4ugQ9X8LqSquNW",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst datos = $('Worker 2 - Registro').first().json.output?.datos || {};\nconst registros = $input.all()\n  .map(item => item.json)\n  .filter(item => item.ID && item.Expediente);\n\nfunction normalizar(valor) {\n  return String(valor ?? '')\n    .normalize('NFD')\n    .replace(/[\\u0300-\\u036f]/g, '')\n    .toLowerCase()\n    .replace(/[^a-z0-9]/g, '')\n    .trim();\n}\n\nfunction fechaValida(valor) {\n  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(valor)) return false;\n\n  const fecha = new Date(valor + 'T00:00:00Z');\n\n  return !isNaN(fecha.getTime()) &&\n    fecha.toISOString().slice(0, 10) === valor;\n}\n\nfunction rechazar(motivo) {\n  return [{\n    json: {\n      autorizado: false,\n      estado: 'rechazado',\n      motivo,\n      registrado: false\n    }\n  }];\n}\n\n// 1. Validación de campos obligatorios\nconst obligatorios = [\n  'Expediente',\n  'Materia',\n  'Estado_procesal',\n  'Tarea_pendiente',\n  'Responsable',\n  'Prioridad',\n  'Estado_tarea',\n  'Fecha_vencimiento'\n];\n\nconst faltantes = obligatorios.filter(\n  campo => !String(datos[campo] ?? '').trim()\n);\n\nif (faltantes.length > 0) {\n  return rechazar(\n    'Faltan campos obligatorios: ' + faltantes.join(', ')\n  );\n}\n\n// 2. Validación de valores permitidos\nconst materias = [\n  'Civil', 'Comercial', 'Laboral', 'Consumo', 'Sucesorio'\n];\n\nconst prioridades = ['Alta', 'Media', 'Baja'];\n\nconst estados = ['Pendiente', 'En curso', 'Completada'];\n\nif (!materias.includes(datos.Materia)) {\n  return rechazar('Materia jurídica no permitida.');\n}\n\nif (!prioridades.includes(datos.Prioridad)) {\n  return rechazar('Prioridad no permitida.');\n}\n\nif (!estados.includes(datos.Estado_tarea)) {\n  return rechazar('Estado de tarea no permitido.');\n}\n\n// 3. Validación de fechas\nif (!fechaValida(datos.Fecha_vencimiento)) {\n  return rechazar('Fecha de vencimiento inválida.');\n}\n\nif (\n  datos.Ultima_actuacion &&\n  !fechaValida(datos.Ultima_actuacion)\n) {\n  return rechazar('Fecha de última actuación inválida.');\n}\n\n// 4. Comprobación de duplicados\nconst duplicado = registros.find(\n  registro =>\n    normalizar(registro.Expediente) ===\n    normalizar(datos.Expediente)\n);\n\nif (duplicado) {\n  return rechazar(\n    'El expediente ya existe con ID ' + duplicado.ID\n  );\n}\n\n// 5. Generación del siguiente identificador\nconst numeros = registros\n  .map(r => /^EXP-(\\d+)$/i.exec(String(r.ID)))\n  .filter(Boolean)\n  .map(match => Number(match[1]));\n\nconst siguiente = Math.max(0, ...numeros) + 1;\nconst nuevoID = 'EXP-' + String(siguiente).padStart(3, '0');\n\n// 6. Resultado aprobado\nreturn [{\n  json: {\n    autorizado: true,\n    estado: 'aprobado',\n    motivo: 'Validación técnica satisfactoria.',\n    registrado: false,\n    id: nuevoID,\n    datos: {\n      ID: nuevoID,\n      ...datos,\n      Ultima_actuacion: datos.Ultima_actuacion || '',\n      Observaciones: datos.Observaciones || ''\n    }\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        352
+      ],
+      "id": "fad00b94-cf41-49ae-9cba-9602cdb9d43c",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "06ea4e2e-9004-4ad8-9c72-f910e23858a3",
+              "leftValue": "=\t{{ $json.autorizado }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        752,
+        352
+      ],
+      "id": "59338c37-276b-43f9-b75f-3f6950bb3ac6",
+      "name": "Autorizar registro"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1pJNVo3roYyT-lNSuM0P1tCnRZXqFUBuPUE9dloOlwVs",
+          "mode": "list",
+          "cachedResultName": "Base_de_conocimiento_Coderhouse",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJNVo3roYyT-lNSuM0P1tCnRZXqFUBuPUE9dloOlwVs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1930996261,
+          "mode": "list",
+          "cachedResultName": "Base_de_conocimiento",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJNVo3roYyT-lNSuM0P1tCnRZXqFUBuPUE9dloOlwVs/edit#gid=1930996261"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.datos.ID }}",
+            "Expediente": "={{ $json.datos.Expediente }}",
+            "Materia": "={{ $json.datos.Materia }}",
+            "Estado_procesal": "={{ $json.datos.Estado_procesal }}",
+            "Tarea_pendiente": "={{ $json.datos.Tarea_pendiente }}",
+            "Responsable": "={{ $json.datos.Responsable }}",
+            "Prioridad": "={{ $json.datos.Prioridad }}",
+            "Estado_tarea": "={{ $json.datos.Estado_tarea }}",
+            "Fecha_vencimiento": "={{ $json.datos.Fecha_vencimiento }}",
+            "Ultima_actuacion": "={{ $json.datos.Ultima_actuacion }}",
+            "Observaciones": "={{ $json.datos.Observaciones }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Expediente",
+              "displayName": "Expediente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Materia",
+              "displayName": "Materia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Estado_procesal",
+              "displayName": "Estado_procesal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tarea_pendiente",
+              "displayName": "Tarea_pendiente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Responsable",
+              "displayName": "Responsable",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Prioridad",
+              "displayName": "Prioridad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Estado_tarea",
+              "displayName": "Estado_tarea",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fecha_vencimiento",
+              "displayName": "Fecha_vencimiento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Ultima_actuacion",
+              "displayName": "Ultima_actuacion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Observaciones",
+              "displayName": "Observaciones",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        960,
+        256
+      ],
+      "id": "df56b7e4-0043-48b3-856f-95e264efef98",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "0P4ugQ9X8LqSquNW",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "56f88b54-ddf1-4379-80d8-2eadf97956b4",
+              "name": "worker",
+              "value": "registro_expedientes",
+              "type": "string"
+            },
+            {
+              "id": "c24f7f56-6d7a-4fca-905e-a1f2b0849a9f",
+              "name": "estado",
+              "value": "exito",
+              "type": "string"
+            },
+            {
+              "id": "87e77409-18dc-4ab8-ac59-a405b9a1574a",
+              "name": "id",
+              "value": "={{ $json.ID }}",
+              "type": "string"
+            },
+            {
+              "id": "64d51e1b-a3eb-49ac-90c8-860cb37a0b6e",
+              "name": "expediente",
+              "value": "={{ $json.Expediente }}",
+              "type": "string"
+            },
+            {
+              "id": "4259b54b-400f-4925-a2e2-3cdfd0c91b28",
+              "name": "registrado",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "ecb795ad-6801-431f-88d8-696ea69cefd2",
+              "name": "mensaje",
+              "value": "Expediente registrado correctamente en Google Sheets",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1168,
+        256
+      ],
+      "id": "23b821f0-5362-4ae4-ba4e-7ab4c27d4bd6",
+      "name": "Registro exitoso"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7aff27ec-8455-4d8d-a027-68a60edf1ad7",
+              "name": "worker",
+              "value": "registro_expedientes",
+              "type": "string"
+            },
+            {
+              "id": "ca4da5af-b5cc-4131-9d44-899d3aa59e62",
+              "name": "estado",
+              "value": "rechazado",
+              "type": "string"
+            },
+            {
+              "id": "60d8052e-bdbd-4594-ba58-4f60dcbafd5d",
+              "name": "motivo",
+              "value": "={{ $json.motivo }}",
+              "type": "string"
+            },
+            {
+              "id": "611b61f9-f68a-44c8-abbc-7a0abbe56799",
+              "name": "registrado",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "09334147-d93d-40cc-8369-f4a4d78e7c0e",
+              "name": "id",
+              "value": "={{ $json.id || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        976,
+        528
+      ],
+      "id": "525cfd9b-5d3b-488c-9d40-946c1d815480",
+      "name": "Registro rechazado"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Herramienta de consulta de expedientes jurídicos existentes en Google Sheets.\n\nEsta herramienta permite recuperar los registros de la base de conocimiento para verificar si un expediente que se pretende incorporar ya se encuentra registrado.\n\nUTILIZAR CUANDO:\n\nSe recibe una solicitud de alta de un nuevo expediente.\n\nEs necesario comprobar si existe una carátula igual o sustancialmente coincidente.\n\nSe necesita verificar si un identificador ya está utilizado.\n\nREGLAS:\n\nConsultar los expedientes existentes antes de validar definitivamente una solicitud de alta.\n\nComparar los datos recibidos con los registros recuperados.\n\nNo considerar como duplicados dos expedientes únicamente porque compartan materia, responsable o demandada.\n\nSi existe una coincidencia clara de expediente, informar que el registro debe rechazarse.\n\nSi existe una coincidencia dudosa, solicitar revisión humana.\n\nSi la consulta falla, no aprobar el registro.\n\nEsta herramienta es exclusivamente de lectura y no permite incorporar, modificar ni eliminar expedientes.\n\nLa ausencia de coincidencias en la consulta no garantiza por sí sola que no existan duplicados. La comprobación definitiva se realizará mediante los controles posteriores del workflow.",
+        "documentId": {
+          "__rl": true,
+          "value": "1pJNVo3roYyT-lNSuM0P1tCnRZXqFUBuPUE9dloOlwVs",
+          "mode": "list",
+          "cachedResultName": "Base_de_conocimiento_Coderhouse",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJNVo3roYyT-lNSuM0P1tCnRZXqFUBuPUE9dloOlwVs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1930996261,
+          "mode": "list",
+          "cachedResultName": "Base_de_conocimiento",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJNVo3roYyT-lNSuM0P1tCnRZXqFUBuPUE9dloOlwVs/edit#gid=1930996261"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -128,
+        560
+      ],
+      "id": "65af08de-e845-42f3-8417-5dbf7a504715",
+      "name": "base_de_conocimiento",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "0P4ugQ9X8LqSquNW",
+          "name": "Google Sheets account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Worker 2 - Registro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Worker 2 - Registro",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Worker 2 - Registro",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Worker 2 - Registro": {
+      "main": [
+        [
+          {
+            "node": "Validacion de registro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validacion de registro": {
+      "main": [
+        [
+          {
+            "node": "Verificar expedientes existentes",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar expedientes existentes": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Autorizar registro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Autorizar registro": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registro rechazado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Registro exitoso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "base_de_conocimiento": {
+      "ai_tool": [
+        [
+          {
+            "node": "Worker 2 - Registro",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "c4cf69f3-0ade-49a2-9e84-283869aeaf4d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "83d0f64b2c1c0d11c05472bd487727c5a31a37e2b5fe229254a7be8e8a228c5e"
+  },
+  "nodeGroups": [],
+  "id": "H3UD94u3NyuvaQ0V",
+  "tags": []
+}

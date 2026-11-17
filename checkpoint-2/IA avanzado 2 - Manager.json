@@ -1,0 +1,544 @@
+{
+  "name": "IA avanzado 2 - Manager",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -320,
+        -16
+      ],
+      "id": "0b772444-e1fc-4477-a599-67068d57f5c6",
+      "name": "When chat message received",
+      "webhookId": "23e3dab6-f907-4693-bda2-b25dd3549bd3"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -176,
+        192
+      ],
+      "id": "4d6833de-7a55-482e-ba51-4b6ab226454b",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "0pgxLDMd7j9JucBG",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "ROL\n\nSos el Manager Jurídico, un agente orquestador especializado en interpretar solicitudes relacionadas con la gestión de expedientes judiciales.\n\nFormás parte de una arquitectura multi-agente Manager-Worker desarrollada en n8n.\n\nÁMBITO\n\nTu responsabilidad consiste exclusivamente en recibir las instrucciones del usuario, interpretar su intención, clasificar la solicitud y preparar los parámetros necesarios para delegarla al Worker correspondiente.\n\nDisponés de dos especialistas:\n\nWorker 1 - Consulta de Expedientes: especializado en recuperar información de Google Sheets.\n\nWorker 2 - Registro de Expedientes: especializado en validar e incorporar nuevos expedientes a Google Sheets.\n\nLa ejecución efectiva de las operaciones corresponde a los Workers, no al Manager.\n\nOBJETIVO\n\nClasificar cada solicitud dentro de una taxonomía cerrada y extraer los datos necesarios para su procesamiento.\n\nTAXONOMÍA DE INTENCIONES\n\nCONSULTAR:\nCuando el usuario solicite información sobre expedientes existentes, estados procesales, responsables, prioridades, tareas o vencimientos.\n\nREGISTRAR:\nCuando el usuario solicite explícitamente incorporar un nuevo expediente a la base de conocimiento.\n\nFUERA_DE_ALCANCE:\nCuando la solicitud no corresponda a ninguna de las operaciones anteriores, implique una acción no autorizada o resulte imposible clasificarla con suficiente certeza.\n\nREGLAS\n\nClasificá cada solicitud utilizando exclusivamente una de las tres intenciones definidas.\n\nNo inventes nuevas categorías.\n\nCuando la intención sea CONSULTAR, conservá la pregunta original del usuario y extraé el identificador del expediente si está expresamente indicado.\n\nCuando la intención sea REGISTRAR, extraé los datos del expediente proporcionados por el usuario y preparalos para el Worker 2.\n\nNunca inventes carátulas, responsables, prioridades, estados procesales ni fechas.\n\nSi falta algún dato para registrar un expediente, conservá el campo vacío. No completes información mediante suposiciones.\n\nNo calcules plazos procesales ni fechas de vencimiento.\n\nUtilizá fechas en formato YYYY-MM-DD cuando el usuario proporcione una fecha inequívoca.\n\nNo afirmes que una consulta fue realizada ni que un expediente fue registrado. Esas operaciones corresponden a los Workers.\n\nNo modifiques ni elimines registros existentes.\n\nCuando la solicitud sea ambigua, utilizá FUERA_DE_ALCANCE e indicá qué aclaración es necesaria.\n\nConservá los datos proporcionados por el usuario sin alterar su significado jurídico.\n\nDELEGACIÓN\n\nSi la intención es CONSULTAR, prepará los parámetros para Worker 1.\n\nSi la intención es REGISTRAR, prepará los parámetros para Worker 2.\n\nSi la intención es FUERA_DE_ALCANCE, informá el motivo sin intentar ejecutar operaciones.\n\nGUARDRAILS\n\nNo tenés autorización para escribir directamente en Google Sheets.\n\nNo podés realizar presentaciones judiciales, enviar notificaciones procesales, efectuar pagos ni adoptar decisiones jurídicas en representación del usuario.\n\nNo interpretes una solicitud de consulta como autorización para registrar información.\n\nFORMATO DE RESPUESTA\n\nDevolvé exclusivamente la estructura definida en el Structured Output Parser.\n\nEl campo \"intencion\" debe contener CONSULTAR, REGISTRAR o FUERA_DE_ALCANCE.\n\nEl campo \"consulta\" debe conservar la solicitud original del usuario.\n\nEl campo \"expediente_id\" debe contener el ID mencionado expresamente, o una cadena vacía si no existe.\n\nEl objeto \"datos\" debe contener los datos extraídos para una operación de registro.\n\nCuando la intención no sea REGISTRAR, dejá vacíos los campos de \"datos\".\n\nEl campo \"motivo\" debe explicar una eventual clasificación FUERA_DE_ALCANCE.\n\nNo agregues explicaciones fuera de la estructura JSON."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -96,
+        -16
+      ],
+      "id": "de287a0f-5908-49e5-8ff9-12eb8fbb7a59",
+      "name": "AI Agent - Manager Jurídico"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "\n{\n  \"intencion\": \"REGISTRAR\",\n  \"consulta\": \"Registrá un expediente laboral nuevo\",\n  \"expediente_id\": \"\",\n  \"motivo\": \"\",\n  \"datos\": {\n    \"Expediente\": \"González c/ Empresa del Sur S.A. s/ despido\",\n    \"Materia\": \"Laboral\",\n    \"Estado_procesal\": \"Traslado de demanda\",\n    \"Tarea_pendiente\": \"Preparar contestación\",\n    \"Responsable\": \"Dr. Martín López\",\n    \"Prioridad\": \"Alta\",\n    \"Estado_tarea\": \"Pendiente\",\n    \"Fecha_vencimiento\": \"2026-12-10\",\n    \"Ultima_actuacion\": \"\",\n    \"Observaciones\": \"\"\n  }\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        80,
+        192
+      ],
+      "id": "0e5d8a63-d033-49d7-bbde-f6ab042fe8db",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 3,
+        "output": "=\n{{\n  ({\n    CONSULTAR: 0,\n    REGISTRAR: 1,\n    FUERA_DE_ALCANCE: 2\n  })[String($json.output?.intencion ?? '')\n    .trim()\n    .toUpperCase()] ?? 2\n}}\n"
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        256,
+        -32
+      ],
+      "id": "6cd6aecc-790c-4ed0-be02-f7ff9fed2712",
+      "name": "Enrutamiento"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d65ca651-d0e0-45ea-b47f-0623cbe2ccc3",
+              "name": "intencion",
+              "value": "={{ $json.output.intencion }}",
+              "type": "string"
+            },
+            {
+              "id": "edf1a9fc-a204-4e62-93d4-12630e37c339",
+              "name": "consulta",
+              "value": "={{ $json.output.consulta }}",
+              "type": "string"
+            },
+            {
+              "id": "c170c7b4-165f-4c55-b79a-c81e28031dde",
+              "name": "expediente_id",
+              "value": "={{ $json.output.expediente_id || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        576,
+        -128
+      ],
+      "id": "6479fb5b-6180-470b-8d99-7cd5cadf0ba9",
+      "name": "Preparar consulta - Worker 1"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "EJYRWqO0gKXVxzwl",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/EJYRWqO0gKXVxzwl",
+          "cachedResultName": "IA avanzado 2 - Worker 1"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "intencion": "={{ $json['intencion '] }}",
+            "consulta": "={{ $json.consulta }}",
+            "expediente_id": "={{ $json.expediente_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "intencion",
+              "displayName": "intencion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "consulta",
+              "displayName": "consulta",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "expediente_id",
+              "displayName": "expediente_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        768,
+        -128
+      ],
+      "id": "dd53daf0-e262-4a57-889e-312818703f16",
+      "name": "Ejecutar Worker 1 - Consulta"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a8057223-f4d6-43ef-9ef4-cbdbd9abb178",
+              "name": "Expediente",
+              "value": "={{ $json.output.datos.Expediente }}",
+              "type": "string"
+            },
+            {
+              "id": "4576e286-8cd2-4551-83c0-fccf07072de3",
+              "name": "Materia",
+              "value": "={{ ({civil:'Civil',comercial:'Comercial',laboral:'Laboral',consumo:'Consumo',sucesorio:'Sucesorio'})[String($json.output.datos.Materia ?? '').trim().toLowerCase()] ?? $json.output.datos.Materia }}",
+              "type": "string"
+            },
+            {
+              "id": "a77d308b-66b9-47e1-98b1-6ab990425a2b",
+              "name": "Estado_procesal",
+              "value": "={{ $json.output.datos.Estado_procesal }}",
+              "type": "string"
+            },
+            {
+              "id": "b3ff56f6-9ad6-4e7d-8b7b-ece734592f3a",
+              "name": "Tarea_pendiente",
+              "value": "={{ $json.output.datos.Tarea_pendiente }}",
+              "type": "string"
+            },
+            {
+              "id": "e6d0c2a7-47bf-4c3d-a32f-e199d5395ffb",
+              "name": "Responsable",
+              "value": "={{ $json.output.datos.Responsable }}",
+              "type": "string"
+            },
+            {
+              "id": "f7c4c681-83d3-4361-a414-42418499c060",
+              "name": "Prioridad",
+              "value": "={{ ({alta:'Alta',media:'Media',baja:'Baja'})[String($json.output.datos.Prioridad ?? '').trim().toLowerCase()] ?? $json.output.datos.Prioridad }}",
+              "type": "string"
+            },
+            {
+              "id": "94799901-c019-463d-bb1e-bdec6285b413",
+              "name": "Estado_tarea",
+              "value": "={{ ({pendiente:'Pendiente','en curso':'En curso',completada:'Completada'})[String($json.output.datos.Estado_tarea ?? '').trim().toLowerCase()] ?? $json.output.datos.Estado_tarea }}",
+              "type": "string"
+            },
+            {
+              "id": "da69f4f0-e06b-409d-9e12-c188aa446c1b",
+              "name": "Fecha_vencimiento",
+              "value": "={{ $json.output.datos.Fecha_vencimiento }}",
+              "type": "string"
+            },
+            {
+              "id": "5ca0469d-8d66-458e-b4fd-4a9cdb3efc10",
+              "name": "Ultima_actuacion",
+              "value": "={{ $json.output.datos.Ultima_actuacion }}",
+              "type": "string"
+            },
+            {
+              "id": "fb85381c-5ad7-4829-a60f-9ade54709dec",
+              "name": "Observaciones",
+              "value": "={{ $json.output.datos.Observaciones }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        592,
+        80
+      ],
+      "id": "6c0be1a2-6574-4893-93da-bedea3dd4841",
+      "name": "Preparar registro - Worker 2"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "H3UD94u3NyuvaQ0V",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/H3UD94u3NyuvaQ0V",
+          "cachedResultName": "IA avanzado 2 - Worker 2"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Expediente": "={{ $json.Expediente }}",
+            "Materia": "={{ $json.Materia }}",
+            "Estado_procesal": "={{ $json.Estado_procesal }}",
+            "Tarea_pendiente": "={{ $json.Tarea_pendiente }}",
+            "Responsable": "={{ $json.Responsable }}",
+            "Prioridad": "={{ $json.Prioridad }}",
+            "Estado_tarea": "={{ $json.Estado_tarea }}",
+            "Fecha_vencimiento": "={{ $json.Fecha_vencimiento }}",
+            "Ultima_actuacion": "={{ $json.Ultima_actuacion }}",
+            "Observaciones": "={{ $json.Observaciones }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Expediente",
+              "displayName": "Expediente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "Materia",
+              "displayName": "Materia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "Estado_procesal",
+              "displayName": "Estado_procesal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "Tarea_pendiente",
+              "displayName": "Tarea_pendiente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "Responsable",
+              "displayName": "Responsable",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "Prioridad",
+              "displayName": "Prioridad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "Estado_tarea",
+              "displayName": "Estado_tarea",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "Fecha_vencimiento",
+              "displayName": "Fecha_vencimiento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "Ultima_actuacion",
+              "displayName": "Ultima_actuacion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "Observaciones",
+              "displayName": "Observaciones",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        800,
+        80
+      ],
+      "id": "69628b48-e2b1-4f80-ba73-4057a44c5018",
+      "name": "Ejecutar Worker 2 - Registro"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bc4facdf-dd92-4d00-90dd-26584fcb0563",
+              "name": "estado",
+              "value": "fuera_de_alcance",
+              "type": "string"
+            },
+            {
+              "id": "44839aea-7837-403f-886d-5591093e9966",
+              "name": "consulta",
+              "value": "={{ $json.output.consulta }}",
+              "type": "string"
+            },
+            {
+              "id": "7574e5fe-9a29-4df3-b501-4de445738752",
+              "name": "mensaje",
+              "value": "={{ $json.output.motivo || 'La solicitud no corresponde a las operaciones disponibles.' }}",
+              "type": "string"
+            },
+            {
+              "id": "e87d1406-ce0f-43be-92bc-dba79501ae42",
+              "name": "worker_ejecutado",
+              "value": false,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        592,
+        320
+      ],
+      "id": "6fbcb7c4-631e-4de9-a933-fd06d60547a6",
+      "name": "Respuesta - Fuera de alcance"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent - Manager Jurídico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent - Manager Jurídico",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent - Manager Jurídico",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent - Manager Jurídico": {
+      "main": [
+        [
+          {
+            "node": "Enrutamiento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrutamiento": {
+      "main": [
+        [
+          {
+            "node": "Preparar consulta - Worker 1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar registro - Worker 2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respuesta - Fuera de alcance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar consulta - Worker 1": {
+      "main": [
+        [
+          {
+            "node": "Ejecutar Worker 1 - Consulta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar registro - Worker 2": {
+      "main": [
+        [
+          {
+            "node": "Ejecutar Worker 2 - Registro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "f04ad7f8-23a4-43f0-a6e3-fdca91c49915",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "83d0f64b2c1c0d11c05472bd487727c5a31a37e2b5fe229254a7be8e8a228c5e"
+  },
+  "nodeGroups": [],
+  "id": "2hmFCyvYpiafrGwS",
+  "tags": []
+}
